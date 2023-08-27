@@ -1,6 +1,7 @@
 pub(crate) use ambiguous_unicode_character::*;
 pub(crate) use asyncio_dangling_task::*;
 pub(crate) use collection_literal_concatenation::*;
+pub(crate) use exception_target_captured::*;
 pub(crate) use explicit_f_string_type_conversion::*;
 pub(crate) use function_call_in_dataclass_default::*;
 pub(crate) use implicit_optional::*;
@@ -19,6 +20,7 @@ mod ambiguous_unicode_character;
 mod asyncio_dangling_task;
 mod collection_literal_concatenation;
 mod confusables;
+mod exception_target_captured;
 mod explicit_f_string_type_conversion;
 mod function_call_in_dataclass_default;
 mod helpers;

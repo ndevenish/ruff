@@ -4,7 +4,7 @@ use ruff_text_size::Ranged;
 use crate::checkers::ast::Checker;
 use crate::registry::Rule;
 use crate::rules::{
-    flake8_bandit, flake8_blind_except, flake8_bugbear, flake8_builtins, pycodestyle, pylint,
+    flake8_bandit, flake8_blind_except, flake8_bugbear, flake8_builtins, pycodestyle, pylint, ruff,
     tryceratops,
 };
 
@@ -71,6 +71,9 @@ pub(crate) fn except_handler(except_handler: &ExceptHandler, checker: &mut Check
             }
             if checker.enabled(Rule::BinaryOpException) {
                 pylint::rules::binary_op_exception(checker, except_handler);
+            }
+            if checker.enabled(Rule::ExceptionTargetCaptured) {
+                ruff::rules::exception_target_captured(checker, except_handler);
             }
             if let Some(name) = name {
                 if checker.enabled(Rule::AmbiguousVariableName) {
