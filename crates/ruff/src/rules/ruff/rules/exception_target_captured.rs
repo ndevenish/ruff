@@ -1,7 +1,7 @@
 use ruff_diagnostics::Violation;
 use ruff_macros::{derive_message_formats, violation};
 
-use ruff_python_ast::ExceptHandler;
+use ruff_python_ast::{self as ast, ExceptHandler};
 
 use crate::checkers::ast::Checker;
 
@@ -58,6 +58,14 @@ impl Violation for ExceptionTargetCaptured {
 }
 
 /// RUF018
-pub(crate) fn exception_target_captured(checker: &Checker, except_handler: &ExceptHandler) {
-    println!("Running exception_target_captured");
+pub(crate) fn exception_target_captured(_checker: &Checker, _except_handler: &ExceptHandler) {
+    // If we don't have a name, we don't need to check
+    let ExceptHandler::ExceptHandler(ast::ExceptHandlerExceptHandler {
+        name: Some(name),
+        body,
+        ..
+    }) = _except_handler
+    else {
+        return;
+    };
 }
