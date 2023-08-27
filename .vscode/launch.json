@@ -1,0 +1,39 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Ruff On test.py",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=ruff",
+                ],
+                "filter": {
+                    "kind": "bin",
+                    "name": "ruff",
+                },
+            },
+            "cwd": "${workspaceFolder}",
+            // "program": "$(workspaceFolder)/target/debug/ruff",
+            // "cwd": "$(workspaceFolder)",
+            // "args": [
+            //     "check",
+            //     "--select",
+            //     "RUF018",
+            //     "test.py"
+            // ]
+            "args": [
+                "check",
+                "--no-cache",
+                "--select",
+                "RUF018,F841,F821",
+                "test.py"
+            ]
+        }
+    ]
+}
