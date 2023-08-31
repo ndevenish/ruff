@@ -275,6 +275,22 @@ impl<'a> SemanticModel<'a> {
         }
     }
 
+    /// Returns the [id](BindingId) of the binding bound to the given name, at
+    /// a given position
+    pub fn get_binding_at(
+        &self,
+        name: &str,
+        scope: &Scope,
+        position: TextSize,
+    ) -> Option<BindingId> {
+        scope
+            .get_all(name)
+            .filter(|x| self.bindings[*x].range.start() < position)
+            .collect::<Vec<_>>()
+            .last()
+            .copied()
+    }
+
     /// Resolve a `load` reference to an [`ast::ExprName`].
     pub fn resolve_load(&mut self, name: &ast::ExprName) -> ReadResult {
         // PEP 563 indicates that if a forward reference can be resolved in the module scope, we
@@ -345,8 +361,7 @@ impl<'a> SemanticModel<'a> {
             // when a type scope is seen — this covers the type scope present between
             // function and class definitions and their parent class scope.
             class_variables_visible = scope.kind.is_type() && index == 0;
-
-            if let Some(binding_id) = scope.get(name.id.as_str()) {
+            if let Some(binding_id) = self.get_binding_at(name.id.as_str(), scope, name.start()) {
                 // Mark the binding as used.
                 let reference_id =
                     self.resolved_references
