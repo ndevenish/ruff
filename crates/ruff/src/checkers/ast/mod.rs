@@ -1271,7 +1271,7 @@ where
         if let Some((name, binding_id)) = binding {
             self.add_binding(
                 name.as_str(),
-                name.range(),
+                TextRange::new(except_handler.end(), except_handler.end()),
                 BindingKind::UnboundException(binding_id),
                 BindingFlags::empty(),
             );
