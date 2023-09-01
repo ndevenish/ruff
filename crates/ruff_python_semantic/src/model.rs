@@ -285,7 +285,7 @@ impl<'a> SemanticModel<'a> {
     ) -> Option<BindingId> {
         scope
             .get_all(name)
-            .filter(|x| self.bindings[*x].range.start() < position)
+            .filter(|x| self.bindings[*x].range.start() <= position)
             .collect::<Vec<_>>()
             .last()
             .copied()
