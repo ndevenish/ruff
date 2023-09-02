@@ -283,6 +283,25 @@ impl<'a> SemanticModel<'a> {
         scope: &Scope,
         position: TextSize,
     ) -> Option<BindingId> {
+        let mut v = scope
+            .get_all(name)
+            .filter(|x| self.bindings[*x].range.start() <= position)
+            .collect::<Vec<_>>();
+        // get_all is currently sorted latest first, but this isn't guaranteed
+        v.sort_by_key(|f| -(self.bindings[*f].range.start().to_u32() as i64));
+        v.first().copied()
+    }
+
+    /// Return the [id](BindingId) of a binding from a given scope, where
+    /// if the binding is a deletion or unbound exception, the position-
+    /// sensitive binding is returned instead of the last binding from
+    /// a scope.
+    fn get_binding_handling_possible_deletion(
+        &self,
+        name: &str,
+        scope: &Scope,
+        position: TextSize,
+    ) -> Option<BindingId> {
         let binding_id = scope.get(name);
         let binding = binding_id.and_then(|bid| self.bindings.get(bid));
 
@@ -294,16 +313,7 @@ impl<'a> SemanticModel<'a> {
             | Some(Binding {
                 kind: BindingKind::UnboundException(None),
                 ..
-            }) => {
-                // Look for a binding that might have existed at definition
-                let mut v = scope
-                    .get_all(name)
-                    .filter(|x| self.bindings[*x].range.start() <= position)
-                    .collect::<Vec<_>>();
-                // get_all is currently sorted latest first, but this isn't guaranteed
-                v.sort_by_key(|f| -(self.bindings[*f].range.start().to_u32() as i64));
-                v.first().copied()
-            }
+            }) => self.get_binding_at(name, scope, position),
             _ => binding_id,
         }
     }
@@ -378,7 +388,9 @@ impl<'a> SemanticModel<'a> {
             // when a type scope is seen — this covers the type scope present between
             // function and class definitions and their parent class scope.
             class_variables_visible = scope.kind.is_type() && index == 0;
-            if let Some(binding_id) = self.get_binding_at(name.id.as_str(), scope, name.start()) {
+            if let Some(binding_id) =
+                self.get_binding_handling_possible_deletion(name.id.as_str(), scope, name.start())
+            {
                 // Mark the binding as used.
                 let reference_id =
                     self.resolved_references
