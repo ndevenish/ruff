@@ -283,12 +283,29 @@ impl<'a> SemanticModel<'a> {
         scope: &Scope,
         position: TextSize,
     ) -> Option<BindingId> {
-        scope
-            .get_all(name)
-            .filter(|x| self.bindings[*x].range.start() <= position)
-            .collect::<Vec<_>>()
-            .last()
-            .copied()
+        let binding_id = scope.get(name);
+        let binding = binding_id.and_then(|bid| self.bindings.get(bid));
+
+        match binding {
+            Some(Binding {
+                kind: BindingKind::Deletion,
+                ..
+            })
+            | Some(Binding {
+                kind: BindingKind::UnboundException(None),
+                ..
+            }) => {
+                // Look for a binding that might have existed at definition
+                let mut v = scope
+                    .get_all(name)
+                    .filter(|x| self.bindings[*x].range.start() <= position)
+                    .collect::<Vec<_>>();
+                // get_all is currently sorted latest first, but this isn't guaranteed
+                v.sort_by_key(|f| -(self.bindings[*f].range.start().to_u32() as i64));
+                v.first().copied()
+            }
+            _ => binding_id,
+        }
     }
 
     /// Resolve a `load` reference to an [`ast::ExprName`].
